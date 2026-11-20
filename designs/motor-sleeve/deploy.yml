@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../.github/schemas/deploy.schema.json
 name: motor-sleeve
-version: 0.0.2
+version: 0.0.3
 source: motor-sleeve.sc
 formats:
   - stl
