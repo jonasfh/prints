@@ -45,13 +45,11 @@ formats:
   - 3mf
 pieces:
   - body: Half_A
-    label: ID14mm
-    copies: 2
+    label: inner_diameter_14mm
     params:
       ID: 14 mm
   - body: Half_A
-    label: ID15mm
-    copies: 2
+    label: inner_diameter_15mm
     params:
       ID: 15 mm
 ```
