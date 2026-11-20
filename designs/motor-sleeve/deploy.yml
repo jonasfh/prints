@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../.github/schemas/deploy.schema.json
 name: motor-sleeve
 version: 0.0.1
 source: motor-sleeve.sc
@@ -11,7 +12,7 @@ pieces:
     params:
       ID: 14 mm
   - body: Half_A
-    label: ID15mm
+    label: 15mm
     copies: 2
     params:
       ID: 15 mm

@@ -11,7 +11,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import jsonschema
 import yaml
+
+SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schemas" / "deploy.schema.json"
 
 
 def build_command_script(
@@ -79,6 +82,8 @@ def format_release_notes(
 def build_manifest(manifest_path: Path, out_root: Path) -> dict[str, Any]:
     """Process a single deploy.yml manifest and run solidcraft-cli for each piece."""
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    jsonschema.validate(instance=manifest, schema=schema)
     name = str(manifest["name"])
     version = str(manifest["version"])
     source_path = (manifest_path.parent / manifest["source"]).resolve()
