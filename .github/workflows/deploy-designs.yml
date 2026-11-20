@@ -1,0 +1,132 @@
+name: Build and Deploy 3D Designs
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "designs/**"
+      - ".github/workflows/deploy-designs.yml"
+      - ".github/scripts/**"
+  push:
+    branches: [main]
+    paths:
+      - "designs/**"
+      - ".github/workflows/deploy-designs.yml"
+      - ".github/scripts/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find changed design manifests
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifests=()
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            while IFS= read -r f; do
+              manifests+=("$f")
+            done < <(find designs -maxdepth 2 \( -name 'deploy.yml' -o -name 'deploy.yaml' \) | sort)
+          else
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              base="${{ github.event.pull_request.base.sha }}"
+              head="${{ github.event.pull_request.head.sha }}"
+            else
+              base="${{ github.event.before }}"
+              head="${{ github.sha }}"
+            fi
+
+            if [[ "$base" == "0000000000000000000000000000000000000000" || -z "$base" ]]; then
+              changed_files=$(git ls-files designs/)
+            else
+              changed_files=$(git diff --name-only "$base" "$head" -- designs/)
+            fi
+
+            dirs=$(echo "$changed_files" | awk -F/ 'NF>=2 {print $1 "/" $2}' | sort -u)
+            for d in $dirs; do
+              if [[ -f "$d/deploy.yml" ]]; then
+                manifests+=("$d/deploy.yml")
+              elif [[ -f "$d/deploy.yaml" ]]; then
+                manifests+=("$d/deploy.yaml")
+              fi
+            done
+          fi
+
+          echo "manifests=${manifests[*]}" >> "$GITHUB_OUTPUT"
+          if [[ ${#manifests[@]} -gt 0 ]]; then
+            echo "has_manifests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_manifests=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install SolidCraft CLI and PyYAML
+        if: steps.changed.outputs.has_manifests == 'true'
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/solidcraft.deb \
+            https://github.com/tangency-labs/solidcraft/releases/latest/download/solidcraft-linux-x86_64.deb
+          sudo apt-get update
+          sudo apt-get install -y /tmp/solidcraft.deb
+          rm -f /tmp/solidcraft.deb
+          python3 -m pip install --quiet pyyaml
+
+      - name: Build design exports
+        if: steps.changed.outputs.has_manifests == 'true'
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/build_designs.py ${{ steps.changed.outputs.manifests }} --out-dir dist
+
+      - name: Upload PR build artifacts
+        if: steps.changed.outputs.has_manifests == 'true' && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-exports
+          path: dist/
+
+      - name: Publish GitHub Releases
+        if: steps.changed.outputs.has_manifests == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+
+          builds = json.loads(Path("dist/builds.json").read_text(encoding="utf-8"))
+          for b in builds:
+              tag = b["tag"]
+              notes = b["notes_file"]
+              files = b["files"]
+              exists = subprocess.run(
+                  ["gh", "release", "view", tag],
+                  stdout=subprocess.DEVNULL,
+                  stderr=subprocess.DEVNULL,
+              ).returncode == 0
+              if exists:
+                  subprocess.run(
+                      ["gh", "release", "upload", tag, *files, "--clobber"],
+                      check=True,
+                  )
+                  subprocess.run(
+                      ["gh", "release", "edit", tag, "--notes-file", notes],
+                      check=True,
+                  )
+              else:
+                  subprocess.run(
+                      ["gh", "release", "create", tag, *files, "--title", tag, "--notes-file", notes],
+                      check=True,
+                  )
+          PY
