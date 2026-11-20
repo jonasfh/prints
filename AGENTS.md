@@ -31,6 +31,7 @@ Where 3D CAD / SolidCraft-specific rules below conflict with general software-pr
 2. **Start Properly**
    - For anything beyond a single primitive, read `skill_reference` (`{"skill": "solidcraft-modeling"}` / `file: "SKILL.md"`) first for command shapes, IDs, plane axes, worked examples, and known traps.
    - Run `inspect_design` (`{"measure": false, "sketches": false}`) to check the current design state before making changes.
+   - **Live / GUI viewing:** The user generally wants to see designs in the SolidCraft app. If `inspect_design` reports a headless session (`Backend: headless`), either prompt the user to start SolidCraft before building (so the session bridges to the app live) or, after saving the `.sc` file, check if SolidCraft is already running (`pgrep -x solidcraft`). If not running, open it (`solidcraft <file.sc>`); if already running, do not launch a duplicate window (which triggers a file-lock / Read-Only dialog) — tell the user the file is saved so they can reload it in their existing window.
 
 3. **Plan Before Building**
    - Calculate parameters, expected volume, bounding box, and world pick coordinates (`[x, y, z]`) before executing.
