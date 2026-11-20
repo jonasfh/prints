@@ -63,3 +63,4 @@ Where 3D CAD / SolidCraft-specific rules below conflict with general software-pr
 
 - Save native files with `save` (`.sc` by default). Note that SolidCraft MCP restricts saving to allowed directories (the opened/saved design folder, recovery folder, or paths configured via `--allow-path`).
 - Export print-ready meshes using `export` (prefer `.3mf` or binary `.stl`) only when requested or when wrapping up a completed part.
+- For automated CI exports, each design folder may include a `deploy.yml` manifest (with `name`, `version`, `source`, `formats`, and `pieces` with optional `label`, `copies`, and `params`). Changes to `designs/` trigger `.github/workflows/deploy-designs.yml` on PRs (artifacts) and `main` (GitHub Releases).

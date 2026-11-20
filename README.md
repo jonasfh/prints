@@ -21,9 +21,16 @@ Etter hvert som det blir flere prosjekter kan det være ryddig å organisere hve
 └── designs/
     └── <prosjektnavn>/
         ├── <del>.sc    # Parametrisk kildefil i SolidCraft
-        ├── <del>.3mf   # Eksport klar for slicer
+        ├── deploy.yml  # Valgfri konfigurasjon for automatisk eksport via GitHub Actions
         └── README.md   # Valgfrie notater (materiale, laghøyde, toleranser, osv.)
 ```
+
+## Automatisk bygg og release (`deploy.yml`)
+
+Hver designmappe kan inneholde en `deploy.yml` som beskriver hvilke kropper, parameter-overstyringer og formater (`.stl`, `.3mf`, `.step`) som skal eksporteres:
+
+- **Pull Request:** Endrede design bygges automatisk i GitHub Actions og lastes opp som **Workflow Artifacts**.
+- **Merge til `main`:** Endrede design publiseres som en **GitHub Release** med tag `<name>-v<version>` og ferdige printefiler vedlagt.
 
 ## AI-assistert modellering
 

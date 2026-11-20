@@ -1,0 +1,17 @@
+name: motor-sleeve
+version: 0.0.1
+source: motor-sleeve.sc
+formats:
+  - stl
+  - 3mf
+pieces:
+  - body: Half_A
+    label: ID14mm
+    copies: 2
+    params:
+      ID: 14 mm
+  - body: Half_A
+    label: ID15mm
+    copies: 2
+    params:
+      ID: 15 mm
