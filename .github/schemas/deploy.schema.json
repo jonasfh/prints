@@ -49,12 +49,6 @@
             "pattern": "^[A-Za-z0-9._-]+$",
             "description": "Optional variant label appended to the output filename to avoid collisions."
           },
-          "copies": {
-            "type": "integer",
-            "minimum": 1,
-            "default": 1,
-            "description": "Number of copies to print (shown in release notes)."
-          },
           "formats": {
             "type": "array",
             "minItems": 1,

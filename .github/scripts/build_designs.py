@@ -63,8 +63,8 @@ def format_release_notes(
     lines = [
         f"## {name} v{version}",
         "",
-        "| File | Body | Copies | Parameters |",
-        "| --- | --- | --- | --- |",
+        "| File | Body | Parameters |",
+        "| --- | --- | --- |",
     ]
     for row in rows:
         params_str = (
@@ -72,9 +72,8 @@ def format_release_notes(
             if row["params"]
             else "default"
         )
-        copies = row.get("copies", 1)
         body = row.get("body") or "all"
-        lines.append(f"| `{row['file']}` | `{body}` | {copies} | {params_str} |")
+        lines.append(f"| `{row['file']}` | `{body}` | {params_str} |")
     lines.append("")
     return "\n".join(lines)
 
@@ -135,7 +134,6 @@ def build_manifest(manifest_path: Path, out_root: Path) -> dict[str, Any]:
                 {
                     "file": out_file.name,
                     "body": piece.get("body"),
-                    "copies": piece.get("copies", 1),
                     "params": piece.get("params") or {},
                 }
             )
