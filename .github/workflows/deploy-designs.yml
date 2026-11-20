@@ -70,7 +70,19 @@ jobs:
             echo "has_manifests=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install SolidCraft CLI and PyYAML
+      - name: Install Python dependencies
+        if: steps.changed.outputs.has_manifests == 'true'
+        run: python3 -m pip install --quiet pyyaml jsonschema
+
+      - name: Verify version bump on changed designs
+        if: steps.changed.outputs.has_manifests == 'true' && github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/check_version_bump.py \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            ${{ steps.changed.outputs.manifests }}
+
+      - name: Install SolidCraft CLI
         if: steps.changed.outputs.has_manifests == 'true'
         run: |
           set -euo pipefail
@@ -79,7 +91,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y /tmp/solidcraft.deb
           rm -f /tmp/solidcraft.deb
-          python3 -m pip install --quiet pyyaml jsonschema
 
       - name: Build design exports
         if: steps.changed.outputs.has_manifests == 'true'
