@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../.github/schemas/deploy.schema.json
 name: motor-sleeve
-version: 0.0.3
+version: 0.0.4
 source: motor-sleeve.sc
 formats:
   - stl
@@ -10,7 +10,9 @@ pieces:
     label: inner_diameter_14mm
     params:
       ID: 14 mm
+      finger_gap: 0.2 mm
   - body: Half_A
     label: inner_diameter_15mm
     params:
       ID: 15 mm
+      finger_gap: 0.2 mm
